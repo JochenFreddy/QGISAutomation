@@ -27,9 +27,9 @@ def select_year(year):
     # Change the name of the layer to events in year (The title of the legend is equal to the name of the layer)
     rename.setName('events in ' + str(year))
     # use a predefined layout to make your map, this layout should be in you project so the name should suffice
-    layout = manager.layoutByName("Seismic")
+    layout = manager.layoutByName("Layout_name")
     exporter = QgsLayoutExporter(layout)
     path = "path"
     #in this example we choose a pdf format
-    exporter.exportToPdf(path + 'String' + str(year)+".pdf", QgsLayoutExporter.PdfExportSettings())
+    exporter.exportToPdf(path + 'Constant_String' + str(year)+".pdf", QgsLayoutExporter.PdfExportSettings())
     QgsProject.instance().clear()
