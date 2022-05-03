@@ -17,7 +17,7 @@ def select_expression(expression, name, query ="", amount = 50):
     add_tecto()
     vl = QgsProject.instance().mapLayersByName('Event')[0]
     # set the style of the data
-    vl.loadNamedStyle('/Users/jochenvlaeminck/Documents/Stage/Styles/selected_earthquakes_cleared.qml')
+    vl.loadNamedStyle('Path/To/Style.qml')
     vl.triggerRepaint()
     # Select the features for which the expression is true
     # get_query is a helper function which reformats the expression String to the correct format
