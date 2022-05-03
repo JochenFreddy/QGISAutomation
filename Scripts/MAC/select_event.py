@@ -1,4 +1,9 @@
-project_path = "path"
+import pandas as pd
+import numpy
+from Helpers import *
+# Set the path to the project
+project_path = "path.qgz"
+# create a dictionary for the events and a given value
 eventdict = {'ke' : '2', 'ki': '2', 'qb':'1', 'sqb':'1', 'cb':'3', 'scb':'3'}
 # Selection of event in descending order with the newest being number 1
 def select_event(Newest):
@@ -16,16 +21,17 @@ def select_event(Newest):
     #load a predefined style
     vl.loadNamedStyle('path to style.qml')
     vl.triggerRepaint()
-    # Set groups either to visible or not-visible
-    QgsProject.instance().layerTreeRoot().findGroup('not_visible').setItemVisibilityChecked(False)
+    # Set groups either to visible or not-visible (findgroup(group_name))
+    QgsProject.instance().layerTreeRoot().findGroup('not_visible1').setItemVisibilityChecked(False)
     QgsProject.instance().layerTreeRoot().findGroup('visible').setItemVisibilityChecked(True)
-    QgsProject.instance().layerTreeRoot().findGroup('not_visible').setItemVisibilityChecked(False)
+    QgsProject.instance().layerTreeRoot().findGroup('not_visible2').setItemVisibilityChecked(False)
+    # Order the Vl vector layer (loaded in by add tecto) by date in descending order
     request = qgis.core.QgsFeatureRequest()
     clause = qgis.core.QgsFeatureRequest.OrderByClause('date', ascending=False)
     orderby = qgis.core.QgsFeatureRequest.OrderBy([clause])
     request.setOrderBy(orderby)
     feats_point = vl.getFeatures(request)
-    # Select the feature at the "Newest" position
+    # Select the features at the "Newest" position
     i=0
     for feature in feats_point:
         if i==Newest:
@@ -53,13 +59,15 @@ def select_event(Newest):
     coordinate = geom.asPoint()
 
     X,Y = coordinate[0], coordinate[1]
-    #get the distance in degrees using the haversine formula
+    #get the distance in degrees using the reverse haversine formula and create the rectangle geometry 
     height,width = new_distance(X,Y,20,20)
     p_points = [QgsPointXY(X-height, Y-width), QgsPointXY(X-height, Y+width), QgsPointXY(X+height, Y+width), QgsPointXY(X+height, Y-width)]
-    canvas.setExtent(QgsGeometry.fromPolygonXY([p_points]).boundingBox()) #setExtent based on the boundingbox
-    # get_date, municipality and province from input
+    # set the canvas extent based on the boundingbox of the created geometry
+    canvas.setExtent(QgsGeometry.fromPolygonXY([p_points]).boundingBox()) 
+    # Get the date of the municipality and province from the variables
     Munfeat = Mun.getFeatures()
     Provfeat = Prov.getFeatures()
+    # If the point is outside of Belgium no province is selected
     for prov in Provfeat:
         if geom.intersects(prov.geometry()):
             Prov.selectByIds([prov.id()], QgsVectorLayer.AddToSelection)
@@ -67,6 +75,7 @@ def select_event(Newest):
         ProvName= " ,  " + Prov.selectedFeatures()[0]['Name_2']
     else:
         ProvName = ""
+    # If the point is outside of Belgium the name is selected from the event database
     for mun in Munfeat:
         if geom.intersects(mun.geometry()):
             Mun.selectByIds([mun.id()], QgsVectorLayer.AddToSelection)
@@ -75,7 +84,7 @@ def select_event(Newest):
     else:
         MunName = name
     
-    # Make the different language texts for all the different snapshots
+    # Make the different language texts for all the different snapshots the month function is used to account for the different months
     for j in range(0,4,1):
         NL= dag + ' ' + month(maand, maand_dict) + ' ,  ' + jaar + ' ' + time + ' - ' + MunName + ProvName + ' -  ML ' + str(mag) + '\n' + ' Horizontale onzekerheid ' + str(hor) + ' km'
         FR= dag + ' ' + month(maand, mois_dict) + ' ,  ' + jaar + ' ' + time + ' - ' + MunName + ProvName + ' -  ML ' + str(mag) + '\n' + ' Incertitude horizontale ' + str(hor) + ' km'
@@ -83,10 +92,13 @@ def select_event(Newest):
         DE= dag + ' ' + month(maand, monat_dict) + ' ,  ' + jaar + ' ' + time + ' - ' + MunName + ProvName + ' -  ML ' + str(mag) + '\n' + ' Horizontale Unsicherheit ' + str(hor) + ' km'
         language = [NL,FR,EN,DE]
         stijl = ['Event NL','Event FR','Event EN','Event DE']
+        # Use the layout for the selected language with a premade legend
         manager = QgsProject.instance().layoutManager()
-        layout = manager.layoutByName(stijl[j]) #adapt
-        mapItem = layout.itemById("Map 1") #adapt
+        layout = manager.layoutByName(stijl[j]) 
+        mapItem = layout.itemById("Map 1") 
+        # Set the extent of the map canvas of the layout to the current map canvas of the project
         mapItem.setExtent(canvas.extent())
+        # Select the legend based on the event type and set to visible
         for i in range(1, 4, 1):
             if str(i) == eventdict[eventType]:
                 legendItem = layout.itemById(str(i))
@@ -94,9 +106,21 @@ def select_event(Newest):
             else:
                 legendItem = layout.itemById(str(i))
                 legendItem.setVisibility(False)
+        # adapt the title based on the language
         title = layout.itemById("titel")
         title.setText(language[j]) 
+        # export the map
         exporter = QgsLayoutExporter(layout)
-        path = "/Users/jochenvlaeminck/Documents/Stage/Images/Snapshot/" #adapt
+        path = "path" #adapt
         exporter.exportToPdf(path + str(stijl[j]) + str(MunName) + '_' + jaar +".pdf", QgsLayoutExporter.PdfExportSettings())
     QgsProject.instance().clear()
+
+    #For each language we use a dictionary to show the different months
+maand_dict= {"01":"Januari","02":"Februari", "03":"Maart", "04":"April", "05":"Mei", "06":"Juni","07":"Juli","08":"Augustus", "09":"September", "10":"Oktober", "11":"November", "12":"December"}
+mois_dict = {"01" : "Janvier", "02" : "Février", "03" : "Mars", "04" : "Avril", "05" : "Mai", "06" : "Juin", "07" : "Juillet", "08" : "Août", "09" : "Septembre", "10" : "Octobre", "11" : "Novembre", "12" : "Décembre"}
+month_dict = {"01": "January", "02": "February", "03": "March", "04": "April", "05": "May", "06": "June", "07": "July", "08": "August", "09": "September", "10": "October", "11": "November", "12": "December"}
+monat_dict = {"01":"Januar","02":"Februar", "03":"März", "04":"April", "05":"Mai", "06":"Juni","07":"Juli","08":"August", "09":"September", "10":"Oktober", "11":"November", "12":"Dezember"}
+
+# Return the month for the given language
+def month(month,x):
+    return x[str(month)]
