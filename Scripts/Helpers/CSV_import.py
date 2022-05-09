@@ -11,8 +11,8 @@ import time
 def add_tecto():
     # Read the url in as a dataframe Token needs to be adapted
     # the amount of features are set to an amount larger than the datasets to ensure that all the datapoints are included
-    dataT = pd.read_csv('http://seisalert.oma.be/kml/get_data/?token=token&format=csv&last=10000&type=tectonic')
-    dataN = pd.read_csv('http://seisalert.oma.be/kml/get_data/?token=token&format=csv&last=10000&type=nontectonic')
+    dataT = pd.read_csv('API-link-with-Token')
+    dataN = pd.read_csv('API-link-with-Token')
     frames = [dataT, dataN]
     # The 2 dataframes are combined (Concatenated). The columns for both frames are equal
     data = pd.concat(frames)
@@ -30,8 +30,8 @@ def add_tecto():
 def add_tecto_directly(crs):
     # Read the url in as a dataframe Token needs to be adapted
     # the amount of features are set to an amount larger than the datasets to ensure that all the datapoints are included
-    dataT = pd.read_csv('http://seisalert.oma.be/kml/get_data/?token=token&format=csv&last=10000&type=tectonic')
-    dataN = pd.read_csv('http://seisalert.oma.be/kml/get_data/?token=token&format=csv&last=10000&type=nontectonic')
+    dataT = pd.read_csv('API-link-with-Token')
+    dataN = pd.read_csv('API-link-with-Token')
     frames = [dataT, dataN]
     # The 2 dataframes are combined (Concatenated). The columns for both frames are equal
     data = pd.concat(frames)
