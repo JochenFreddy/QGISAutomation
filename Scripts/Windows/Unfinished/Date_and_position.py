@@ -29,6 +29,12 @@ selectstr= ["From_d", "To_d", "From_lat", "To_lat", "From_lon", "To_lon", "From_
 #set path to project, layout used for each project needs to be known
 # Give the different input values with the name you want to give the map
 def Online_database(name,From_d,To_d,From_lat,To_lat,From_lon,To_lon):
+    selectlist[0]=From_d
+    selectlist[1]= To_d
+    selectlist[2]=From_lat
+    selectlist[3]=To_lat
+    selectlist[4]=From_lon
+    selectlist[5]=To_lon
     #open the project
     project = QgsProject.instance()
     project.setFileName(project_path)
